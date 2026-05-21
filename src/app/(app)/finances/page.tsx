@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { createClient } from "@/lib/supabase/server";
 import { Finance } from "@/types/database";
 import FinancesChart from "./FinancesChart";

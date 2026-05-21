@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import ClientDetail from "./ClientDetail";

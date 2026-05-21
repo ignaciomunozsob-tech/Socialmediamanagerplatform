@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { createClient } from "@/lib/supabase/server";
 import { Client, ContentPiece, Finance } from "@/types/database";
 import PaymentAlert from "./PaymentAlert";
