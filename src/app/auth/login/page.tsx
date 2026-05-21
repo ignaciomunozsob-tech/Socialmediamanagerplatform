@@ -16,14 +16,21 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setError(error.message);
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setError(error.message);
+        setLoading(false);
+      } else if (data.session) {
+        window.location.href = "/dashboard";
+      } else {
+        setError("No se pudo iniciar sesión. Verificá tu email y contraseña.");
+        setLoading(false);
+      }
+    } catch (err) {
+      setError("Error al conectar. Intentá de nuevo.");
       setLoading(false);
-    } else {
-      router.push("/dashboard");
-      router.refresh();
     }
   }
 
