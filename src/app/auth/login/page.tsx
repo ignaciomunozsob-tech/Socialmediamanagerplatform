@@ -1,33 +1,48 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+
+const SUPABASE_URL = "https://zuictmuvgsytfjpnbtrl.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1aWN0bXV2Z3N5dGZqcG5idHJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNzExNTQsImV4cCI6MjA5NDk0NzE1NH0.iNtSDtLsg80dWigR_iFQaVr6jwELrbvOZne_iMT0CqY";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        setError(error.message);
-        setLoading(false);
-      } else if (data.session) {
+      const res = await fetch(
+        `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.access_token) {
+        localStorage.setItem("sb-access-token", data.access_token);
+        localStorage.setItem("sb-refresh-token", data.refresh_token);
         window.location.href = "/dashboard";
       } else {
-        setError("No se pudo iniciar sesión. Verificá tu email y contraseña.");
+        setError(data.error_description || data.msg || "Email o contraseña incorrectos");
         setLoading(false);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : JSON.stringify(err);
-      setError("Error: " + msg);
+      setError("Error de red: " + msg);
       setLoading(false);
     }
   }
