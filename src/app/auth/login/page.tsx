@@ -25,8 +25,9 @@ export default function LoginPage() {
         setError("No se pudo iniciar sesión. Verificá tu email y contraseña.");
         setLoading(false);
       }
-    } catch {
-      setError("Error al conectar. Intentá de nuevo.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : JSON.stringify(err);
+      setError("Error: " + msg);
       setLoading(false);
     }
   }
