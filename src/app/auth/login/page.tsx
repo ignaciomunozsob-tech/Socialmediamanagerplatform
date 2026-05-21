@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createBrowserClient } from "@supabase/ssr";
 
 const SUPABASE_URL = "https://zuictmuvgsytfjpnbtrl.supabase.co";
 const SUPABASE_ANON_KEY =
@@ -33,8 +34,11 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (data.access_token) {
-        localStorage.setItem("sb-access-token", data.access_token);
-        localStorage.setItem("sb-refresh-token", data.refresh_token);
+        const supabase = createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        await supabase.auth.setSession({
+          access_token: data.access_token,
+          refresh_token: data.refresh_token,
+        });
         window.location.href = "/dashboard";
       } else {
         setError(data.error_description || data.msg || "Email o contraseña incorrectos");
