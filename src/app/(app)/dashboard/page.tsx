@@ -14,31 +14,38 @@ function StatCard({ label, value, sub }: { label: string; value: string; sub?: s
 }
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
   const monthStart = `${year}-${String(month).padStart(2, "0")}-01`;
   const monthEnd = `${year}-${String(month).padStart(2, "0")}-31`;
 
-  const [clientsRes, piecesRes, financesRes] = await Promise.all([
-    supabase.from("clients").select("*").eq("status", "active"),
-    supabase
-      .from("content_pieces")
-      .select("*, client:clients(name,color)")
-      .gte("scheduled_date", monthStart)
-      .lte("scheduled_date", monthEnd)
-      .order("scheduled_date", { ascending: true }),
-    supabase
-      .from("finances")
-      .select("*")
-      .gte("date", monthStart)
-      .lte("date", monthEnd),
-  ]);
+  let clients: Client[] = [];
+  let pieces: ContentPiece[] = [];
+  let finances: Finance[] = [];
 
-  const clients: Client[] = clientsRes.data ?? [];
-  const pieces: ContentPiece[] = piecesRes.data ?? [];
-  const finances: Finance[] = financesRes.data ?? [];
+  try {
+    const supabase = await createClient();
+    const [clientsRes, piecesRes, financesRes] = await Promise.all([
+      supabase.from("clients").select("*").eq("status", "active"),
+      supabase
+        .from("content_pieces")
+        .select("*, client:clients(name,color)")
+        .gte("scheduled_date", monthStart)
+        .lte("scheduled_date", monthEnd)
+        .order("scheduled_date", { ascending: true }),
+      supabase
+        .from("finances")
+        .select("*")
+        .gte("date", monthStart)
+        .lte("date", monthEnd),
+    ]);
+    clients = clientsRes.data ?? [];
+    pieces = piecesRes.data ?? [];
+    finances = financesRes.data ?? [];
+  } catch {
+    // show empty dashboard if DB not reachable
+  }
 
   const income = finances.filter((f) => f.type === "income").reduce((s, f) => s + f.amount, 0);
   const expenses = finances.filter((f) => f.type === "expense").reduce((s, f) => s + f.amount, 0);
@@ -89,23 +96,12 @@ export default async function DashboardPage() {
                 );
                 return (
                   <div key={p.id} className="flex items-center gap-3">
-                    <div
-                      className="w-2 h-2 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: client?.color ?? "#7B6EFF" }}
-                    />
+                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: client?.color ?? "#7B6EFF" }} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-text truncate">{p.title}</p>
                       <p className="text-xs text-text-dim">{client?.name}</p>
                     </div>
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
-                        diff === 0
-                          ? "bg-red-500/20 text-red-400"
-                          : diff === 1
-                          ? "bg-orange-500/20 text-orange-400"
-                          : "bg-yellow-500/20 text-yellow-400"
-                      }`}
-                    >
+                    <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${diff === 0 ? "bg-red-500/20 text-red-400" : diff === 1 ? "bg-orange-500/20 text-orange-400" : "bg-yellow-500/20 text-yellow-400"}`}>
                       {diff === 0 ? "Hoy" : diff === 1 ? "Mañana" : `${diff}d`}
                     </span>
                   </div>
@@ -139,10 +135,7 @@ export default async function DashboardPage() {
                       <span className="text-text">{count}</span>
                     </div>
                     <div className="h-1.5 bg-border rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${color}`}
-                        style={{ width: `${pct}%` }}
-                      />
+                      <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 );

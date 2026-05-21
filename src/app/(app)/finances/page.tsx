@@ -5,20 +5,26 @@ import FinancesChart from "./FinancesChart";
 import FinancesTable from "./FinancesTable";
 
 export default async function FinancesPage() {
-  const supabase = await createClient();
   const now = new Date();
+  let all: Finance[] = [];
 
-  const sixMonthsAgo = new Date(now);
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
-  sixMonthsAgo.setDate(1);
+  try {
+    const supabase = await createClient();
 
-  const { data: finances } = await supabase
-    .from("finances")
-    .select("*, client:clients(name)")
-    .gte("date", sixMonthsAgo.toISOString().split("T")[0])
-    .order("date", { ascending: false });
+    const sixMonthsAgo = new Date(now);
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+    sixMonthsAgo.setDate(1);
 
-  const all: Finance[] = finances ?? [];
+    const { data: finances } = await supabase
+      .from("finances")
+      .select("*, client:clients(name)")
+      .gte("date", sixMonthsAgo.toISOString().split("T")[0])
+      .order("date", { ascending: false });
+
+    all = finances ?? [];
+  } catch {
+    all = [];
+  }
 
   const monthlyData: Record<string, { income: number; expense: number }> = {};
   for (let i = 5; i >= 0; i--) {

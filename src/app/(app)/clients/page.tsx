@@ -17,13 +17,17 @@ const statusStyle: Record<string, string> = {
 };
 
 export default async function ClientsPage() {
-  const supabase = await createClient();
-  const { data: clients } = await supabase
-    .from("clients")
-    .select("*")
-    .order("name");
-
-  const all: Client[] = clients ?? [];
+  let all: Client[] = [];
+  try {
+    const supabase = await createClient();
+    const { data: clients } = await supabase
+      .from("clients")
+      .select("*")
+      .order("name");
+    all = clients ?? [];
+  } catch {
+    all = [];
+  }
 
   return (
     <div className="space-y-6">
