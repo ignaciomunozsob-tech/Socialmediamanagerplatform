@@ -11,46 +11,27 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
-  const supabase = createServerClient(supabaseUrl, supabaseKey, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) =>
-          request.cookies.set(name, value)
-        );
-        supabaseResponse = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) =>
-          supabaseResponse.cookies.set(name, value, options)
-        );
-      },
-    },
-  });
-
-  const url = request.nextUrl.clone();
-  const isPortal = url.pathname.startsWith("/portal");
-  const isAuth = url.pathname.startsWith("/auth");
-
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const supabase = createServerClient(supabaseUrl, supabaseKey, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          supabaseResponse = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
+        },
+      },
+    });
 
-    if (!user && !isPortal && !isAuth) {
-      url.pathname = "/auth/login";
-      return NextResponse.redirect(url);
-    }
-
-    if (user && isAuth) {
-      url.pathname = "/dashboard";
-      return NextResponse.redirect(url);
-    }
+    await supabase.auth.getUser();
   } catch {
-    if (!isPortal && !isAuth) {
-      url.pathname = "/auth/login";
-      return NextResponse.redirect(url);
-    }
+    // silently fail — layout.tsx handles auth redirects
   }
 
   return supabaseResponse;
