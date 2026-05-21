@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { useEffect } from "react";
+import { createBrowserClient } from "@supabase/ssr";
+
+const SUPABASE_URL = "https://zuictmuvgsytfjpnbtrl.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1aWN0bXV2Z3N5dGZqcG5idHJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNzExNTQsImV4cCI6MjA5NDk0NzE1NH0.iNtSDtLsg80dWigR_iFQaVr6jwELrbvOZne_iMT0CqY";
 
 const navItems = [
   {
@@ -58,12 +63,17 @@ const navItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) router.replace("/auth/login");
+    });
+  }, []);
 
   async function handleSignOut() {
     await supabase.auth.signOut();
     router.push("/auth/login");
-    router.refresh();
   }
 
   return (
