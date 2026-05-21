@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Client, ContentPiece, Finance, Meeting, Report } from "@/types/database";
+import { Client, ContentPiece, Finance, Meeting } from "@/types/database";
 import ContentTab from "./ContentTab";
 import FinancesTab from "./FinancesTab";
 import MeetingsTab from "./MeetingsTab";
@@ -14,13 +14,12 @@ export default function ClientDetail({
   pieces,
   finances,
   meetings,
-  reports,
 }: {
   client: Client;
   pieces: ContentPiece[];
   finances: Finance[];
   meetings: Meeting[];
-  reports: Report[];
+  reports: unknown[];
 }) {
   const [tab, setTab] = useState<Tab>("content");
 

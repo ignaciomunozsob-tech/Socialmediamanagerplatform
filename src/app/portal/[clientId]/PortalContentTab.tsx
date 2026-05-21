@@ -22,7 +22,6 @@ const statusStyle: Record<string, string> = {
 
 export default function PortalContentTab({
   pieces,
-  clientId,
 }: {
   pieces: ContentPiece[];
   clientId: string;
