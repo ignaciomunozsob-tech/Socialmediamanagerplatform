@@ -2,15 +2,12 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -28,7 +25,7 @@ export default function LoginPage() {
         setError("No se pudo iniciar sesión. Verificá tu email y contraseña.");
         setLoading(false);
       }
-    } catch (err) {
+    } catch {
       setError("Error al conectar. Intentá de nuevo.");
       setLoading(false);
     }
